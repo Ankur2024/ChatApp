@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">ChatApp</string>
+    <string name="welcome">WELCOME</string>
+    <string name="onboarding_description">Break the \nboundaries and connect with\npeople all over\nthe\nworld</string>
+    <string name="boarding_background">Boarding Background</string>
+    <string name="right_arrow">right arrow</string>
+    <string name="login_screen_image">Login Screen Image</string>
+    <string name="enter_your_phone_number">Enter Your Phone Number</string>
+    <string name="phone_icon">Phone icon</string>
+    <string name="get_started">Get Started</string>
 </resources>
