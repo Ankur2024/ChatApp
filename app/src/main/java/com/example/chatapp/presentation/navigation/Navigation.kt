@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.chatapp.presentation.screen.login.components.LoginScreen
 import com.example.chatapp.presentation.screen.onBoardingScreen.OnBoardingScreen
 
 
@@ -16,7 +17,7 @@ fun Navigation(
             OnBoardingScreen(navController = navController)
         }
         composable(Screen.Login.route) {
-
+            LoginScreen(navController = navController)
         }
     }
 }
