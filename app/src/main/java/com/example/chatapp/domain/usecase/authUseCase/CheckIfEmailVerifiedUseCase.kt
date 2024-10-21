@@ -5,10 +5,10 @@ import com.example.chatapp.domain.utils.ResultState
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class VerifyEmailLinkUseCase @Inject constructor(
+class CheckIfEmailVerifiedUseCase @Inject constructor(
     private val authRepository: AuthRepository
 ) {
-    operator fun invoke(email: String, emailLink: String): Flow<ResultState<String>> {
-        return authRepository.verifyEmailLink(email, emailLink)
+    operator fun invoke(): Flow<ResultState<String>> {
+        return authRepository.checkIfEmailVerified()
     }
 }

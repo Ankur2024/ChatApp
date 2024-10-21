@@ -1,5 +1,6 @@
 package com.example.chatapp.presentation.screen.login.components
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,6 +20,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -33,20 +36,26 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.chatapp.R
+import com.example.chatapp.domain.utils.ResultState
+import com.example.chatapp.presentation.common.ShowToast
+import com.example.chatapp.presentation.navigation.Screen
+import com.example.chatapp.presentation.screen.login.authViewmodel.AuthViewModel
 import com.example.chateaseapp.presentation.screen.common.GradientButton
 
 @Composable
 fun LoginScreen(
     navController: NavController,
+    viewModel: AuthViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val email = remember { mutableStateOf("") }
-    val password = remember { mutableStateOf("") }
+    val authState = viewModel.authState.collectAsState()
+    val showToastMessage = remember { mutableStateOf<String?>(null) }
 
-    // UI Layout
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -55,8 +64,7 @@ fun LoginScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
-            .background(Color.Black),
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -65,8 +73,6 @@ fun LoginScreen(
                     .fillMaxWidth()
                     .wrapContentHeight()
                     .background(Color.Black),
-//                elevation = CardDefaults.elevatedCardElevation(8.dp),
-//                shape = MaterialTheme.shapes.medium
             ) {
                 Column(
                     modifier = Modifier
@@ -96,7 +102,7 @@ fun LoginScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                     GradientButton(
                         onClick = {
-
+                            viewModel.loginOrRegisterWithEmail(email.value)
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -137,11 +143,34 @@ fun LoginScreen(
                         iconResId = R.drawable.google_icon,
                         text = stringResource(R.string.get_started)
                     )
-
-
                 }
             }
         }
+    }
+    LaunchedEffect(authState.value) {
+        when (authState.value) {
+            is ResultState.Success -> {
+                val message = (authState.value as ResultState.Success).data
+                showToastMessage.value = message
+                if (message.contains("Email is verified")) {
+                    viewModel.verifyAndNavigate {
+                        navController.navigate(Screen.add_user_detail_screen.route)
+                        showToastMessage.value = "Navigating to Add User Details and reloading app."
+                        System.exit(0)
+                    }
+                }
+            }
+            is ResultState.Failure -> {
+                val errorMessage = (authState.value as ResultState.Failure).exception.message ?: "Unknown error occurred"
+                showToastMessage.value = errorMessage
+            }
+            else -> Unit
+        }
+    }
+
+    showToastMessage.value?.let { message ->
+        ShowToast(message = message, duration = Toast.LENGTH_LONG)
+        showToastMessage.value = null
     }
 }
 
@@ -178,8 +207,6 @@ fun LoginTextField(
         )
     )
 }
-
-
 
 @Composable
 @Preview(showBackground = true)

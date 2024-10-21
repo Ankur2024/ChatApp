@@ -6,6 +6,5 @@ import kotlinx.coroutines.flow.Flow
 interface AuthRepository {
     fun loginOrRegisterWithEmail(email: String): Flow<ResultState<String>>
     fun signInWithGoogle(idToken: String): Flow<ResultState<String>>
-    fun sendVerificationEmail(email: String): Flow<ResultState<String>>
-    fun verifyEmailLink(email: String, emailLink: String): Flow<ResultState<String>>
+    fun checkIfEmailVerified(): Flow<ResultState<String>>
 }
