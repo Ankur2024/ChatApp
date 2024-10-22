@@ -4,9 +4,9 @@ import com.example.chatapp.domain.repository.authRepository.AuthRepository
 import com.example.chatapp.domain.utils.ResultState
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
@@ -26,21 +26,6 @@ class AuthRepositoryImpl @Inject constructor(
                         it.sendEmailVerification().addOnCompleteListener { verificationTask ->
                             if (verificationTask.isSuccessful) {
                                 trySend(ResultState.Success("Verification email sent. Please check your email."))
-
-                                launch {
-                                    checkIfEmailVerified().collect { verificationResult ->
-                                        when (verificationResult) {
-                                            is ResultState.Success -> {
-                                                trySend(ResultState.Success("Email is verified."))
-                                            }
-                                            is ResultState.Failure -> {
-                                                trySend(ResultState.Failure(Exception("Email is not verified yet.")))
-                                            }
-                                            else -> Unit
-                                        }
-                                    }
-                                }
-
                             } else {
                                 val exception = verificationTask.exception
                                 trySend(
@@ -69,23 +54,35 @@ class AuthRepositoryImpl @Inject constructor(
 
     override fun checkIfEmailVerified(): Flow<ResultState<String>> = callbackFlow {
         val user = firebaseAuth.currentUser
-        user?.reload()?.addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                if (user.isEmailVerified) {
-                    trySend(ResultState.Success("Email is verified."))
+        if (user == null) {
+            trySend(ResultState.Failure(Exception("User not found.")))
+            awaitClose { close() }
+            return@callbackFlow
+        }
+
+        while (true) {
+            user.reload().addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    if (user.isEmailVerified) {
+                        trySend(ResultState.Success("Email is verified."))
+                        close()
+                    } else {
+                        trySend(ResultState.Failure(Exception("Email is not verified.")))
+                    }
                 } else {
-                    trySend(ResultState.Failure(Exception("Email is not verified.")))
+                    trySend(ResultState.Failure(task.exception ?: Exception("Failed to reload user.")))
                 }
-            } else {
-                val exception = task.exception
-                trySend(ResultState.Failure(exception ?: Exception("Failed to verify email.")))
             }
+            delay(2000)
         }
 
         awaitClose { close() }
     }
 
+
+
     override fun signInWithGoogle(idToken: String): Flow<ResultState<String>> {
+        // Implement Google Sign-In logic here
         TODO("Not yet implemented")
     }
 }

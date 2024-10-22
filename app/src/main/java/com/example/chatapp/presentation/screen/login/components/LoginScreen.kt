@@ -136,6 +136,7 @@ fun LoginScreen(
 
                     GradientButton(
                         onClick = {
+                            // Trigger Google sign-in here
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -147,16 +148,17 @@ fun LoginScreen(
             }
         }
     }
+
     LaunchedEffect(authState.value) {
         when (authState.value) {
             is ResultState.Success -> {
                 val message = (authState.value as ResultState.Success).data
                 showToastMessage.value = message
-                if (message.contains("Email is verified")) {
+                if (message.contains("Verification email sent")) {
                     viewModel.verifyAndNavigate {
-                        navController.navigate(Screen.add_user_detail_screen.route)
-                        showToastMessage.value = "Navigating to Add User Details and reloading app."
-                        System.exit(0)
+                        navController.navigate(Screen.add_user_detail_screen.route) {
+                            popUpTo(Screen.Login.route) { inclusive = true }
+                        }
                     }
                 }
             }
@@ -168,11 +170,13 @@ fun LoginScreen(
         }
     }
 
+
     showToastMessage.value?.let { message ->
         ShowToast(message = message, duration = Toast.LENGTH_LONG)
         showToastMessage.value = null
     }
 }
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
