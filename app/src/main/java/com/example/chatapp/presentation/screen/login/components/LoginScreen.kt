@@ -1,5 +1,6 @@
 package com.example.chatapp.presentation.screen.login.components
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -24,6 +25,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -49,12 +51,43 @@ import com.example.chateaseapp.presentation.screen.common.GradientButton
 @Composable
 fun LoginScreen(
     navController: NavController,
-    viewModel: AuthViewModel = hiltViewModel()
+    viewModel: AuthViewModel = hiltViewModel(),
+    onGoogleSignIn: () -> Unit
 ) {
     val context = LocalContext.current
     val email = remember { mutableStateOf("") }
     val authState = viewModel.authState.collectAsState()
     val showToastMessage = remember { mutableStateOf<String?>(null) }
+    val googleAuthState = viewModel.googleAuthState.collectAsState()
+
+    LaunchedEffect(authState.value) {
+        when (authState.value) {
+            is ResultState.Success -> {
+                val message = (authState.value as ResultState.Success).data
+                showToastMessage.value = message
+                if (message.contains("Verification email sent")) {
+                    viewModel.verifyAndNavigate {
+                        navController.navigate(Screen.add_user_detail_screen.route) {
+                            popUpTo(Screen.Login.route) { inclusive = true }
+                        }
+                    }
+                }
+            }
+            is ResultState.Failure -> {
+                val errorMessage = (authState.value as ResultState.Failure).exception.message ?: "Unknown error occurred"
+                Log.d("Auth", errorMessage)
+            }
+            else -> Unit
+        }
+    }
+
+    LaunchedEffect(googleAuthState.value) {
+        viewModel.verifyGoogleSignInAndNavigate {
+            navController.navigate(Screen.add_user_detail_screen.route) {
+                popUpTo(Screen.Login.route) { inclusive = true }
+            }
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -136,7 +169,8 @@ fun LoginScreen(
 
                     GradientButton(
                         onClick = {
-                            // Trigger Google sign-in here
+                            Log.d("Auth", "Button clicked")
+                            onGoogleSignIn()
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -149,26 +183,8 @@ fun LoginScreen(
         }
     }
 
-    LaunchedEffect(authState.value) {
-        when (authState.value) {
-            is ResultState.Success -> {
-                val message = (authState.value as ResultState.Success).data
-                showToastMessage.value = message
-                if (message.contains("Verification email sent")) {
-                    viewModel.verifyAndNavigate {
-                        navController.navigate(Screen.add_user_detail_screen.route) {
-                            popUpTo(Screen.Login.route) { inclusive = true }
-                        }
-                    }
-                }
-            }
-            is ResultState.Failure -> {
-                val errorMessage = (authState.value as ResultState.Failure).exception.message ?: "Unknown error occurred"
-                showToastMessage.value = errorMessage
-            }
-            else -> Unit
-        }
-    }
+
+
 
 
     showToastMessage.value?.let { message ->
@@ -216,5 +232,5 @@ fun LoginTextField(
 @Preview(showBackground = true)
 fun LoginPreview(){
     val navController = rememberNavController()
-    LoginScreen(navController = navController)
+//    LoginScreen(navController = navController, onGoogleSignIn = onGoogleSignIn)
 }

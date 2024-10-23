@@ -3,6 +3,7 @@ package com.example.chatapp.data.repository.authRepositoryImpl
 import com.example.chatapp.domain.repository.authRepository.AuthRepository
 import com.example.chatapp.domain.utils.ResultState
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -75,14 +76,49 @@ class AuthRepositoryImpl @Inject constructor(
             }
             delay(2000)
         }
+        awaitClose { close() }
+    }
+
+    override fun signInWithGoogle(idToken: String): Flow<ResultState<String>> = callbackFlow {
+        trySend(ResultState.Loading)
+
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        firebaseAuth.signInWithCredential(credential).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                trySend(ResultState.Success("Google Sign-In successful"))
+            } else {
+                trySend(ResultState.Failure(task.exception ?: Exception("Google Sign-In failed")))
+            }
+        }.addOnFailureListener { exception ->
+            trySend(ResultState.Failure(exception))
+        }
 
         awaitClose { close() }
     }
 
+    override fun verifyGoogleSignIn(): Flow<ResultState<String>> = callbackFlow {
+        val user = firebaseAuth.currentUser
+        if (user == null) {
+            trySend(ResultState.Failure(Exception("User not found.")))
+            awaitClose { close() }
+            return@callbackFlow
+        }
 
-
-    override fun signInWithGoogle(idToken: String): Flow<ResultState<String>> {
-        // Implement Google Sign-In logic here
-        TODO("Not yet implemented")
+        while (true) {
+            user.reload().addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    if (user.isEmailVerified) {
+                        trySend(ResultState.Success("Google account is verified."))
+                        close()
+                    } else {
+                        trySend(ResultState.Failure(Exception("Google account is not verified.")))
+                    }
+                } else {
+                    trySend(ResultState.Failure(task.exception ?: Exception("Failed to reload user.")))
+                }
+            }
+            delay(3000)
+        }
+        awaitClose { close() }
     }
 }

@@ -72,6 +72,13 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
     implementation("com.google.firebase:firebase-analytics")
 
+    //Firebase Auth
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
+
+    // google signin
+    implementation ("com.google.firebase:firebase-auth-ktx")
+
     //dagger-hilt
     implementation("com.google.dagger:hilt-android:2.51.1")
     kapt("com.google.dagger:hilt-android-compiler:2.51.1")
@@ -82,8 +89,6 @@ dependencies {
     val nav_version = "2.8.3"
     implementation("androidx.navigation:navigation-compose:$nav_version")
 
-    //Firebase Auth
-    implementation("com.google.firebase:firebase-auth")
-    implementation("com.google.android.gms:play-services-auth:21.2.0")
+
 
 }

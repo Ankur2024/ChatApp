@@ -6,13 +6,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
@@ -38,7 +36,8 @@ import com.example.chateaseapp.presentation.screen.common.GradientButton
 fun AddUserScreen(
     navController: NavController
 ) {
-    val fullName = remember { mutableStateOf("") }
+    val firstName = remember { mutableStateOf("") }
+    val lastName = remember { mutableStateOf("") }
     val phoneNumber = remember { mutableStateOf("") }
     val bio = remember { mutableStateOf("") }
     val wordLimit = 60
@@ -46,7 +45,7 @@ fun AddUserScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
+            .background(Color.Black),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -54,13 +53,13 @@ fun AddUserScreen(
         Text(
             text = "Create an account",
             style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.onBackground
+            color = Color.White
         )
 
         Text(
             text = "Invest and double your income now",
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onBackground,
+            color = Color.White,
             modifier = Modifier.padding(bottom = 32.dp)
         )
 
@@ -76,96 +75,101 @@ fun AddUserScreen(
                 painter = painterResource(id = R.drawable.profile_picture),
                 contentDescription = "Profile Picture",
                 modifier = Modifier
-                    .size(190.dp)
+                    .size(150.dp)
                     .padding(8.dp)
             )
         }
-
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(10.dp)
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // First Name
             OutlinedTextField(
-                value = fullName.value,
-                onValueChange = { fullName.value = it },
-                label = { Text("First name") },
+                value = firstName.value,
+                onValueChange = { firstName.value = it },
+                label = { Text("First name", color = Color.Gray) },
                 modifier = Modifier
-                    .padding(bottom = 16.dp, end = 30.dp)
-                    .width(150.dp),
+                    .padding(bottom = 16.dp)
+                    .fillMaxWidth(0.85f),
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedBorderColor = Color.Gray,
                     focusedBorderColor = Color.Green
                 ),
-                shape = RoundedCornerShape(50.dp),
+                shape = RoundedCornerShape(12.dp),
             )
 
             // Last Name
             OutlinedTextField(
-                value = fullName.value,
-                onValueChange = { fullName.value = it },
-                label = { Text("Last name") },
+                value = lastName.value,
+                onValueChange = { lastName.value = it },
+                label = { Text("Last name", color = Color.Gray) },
                 modifier = Modifier
                     .padding(bottom = 16.dp)
-                    .width(150.dp),
+                    .fillMaxWidth(0.85f),
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedBorderColor = Color.Gray,
                     focusedBorderColor = Color.Green
                 ),
-                shape = RoundedCornerShape(50.dp),
+                shape = RoundedCornerShape(12.dp),
+            )
+
+            // Phone Number Input
+            OutlinedTextField(
+                value = phoneNumber.value,
+                onValueChange = { phoneNumber.value = it.take(10) },
+                label = { Text("Phone number", color = Color.Gray) },
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Number
+                ),
+                modifier = Modifier
+                    .padding(bottom = 16.dp)
+                    .fillMaxWidth(0.85f),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = Color.Gray,
+                    focusedBorderColor = Color.Green
+                ),
+                shape = RoundedCornerShape(12.dp),
+            )
+
+            // Bio Input (Text Area)
+            OutlinedTextField(
+                value = bio.value,
+                onValueChange = {
+                    val wordCount = it.split("\\s+".toRegex()).size
+                    if (wordCount <= wordLimit) {
+                        bio.value = it
+                    }
+                },
+                label = { Text("Bio", color = Color.Gray) },
+                modifier = Modifier
+                    .padding(bottom = 32.dp)
+                    .fillMaxWidth(0.85f)
+                    .height(150.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = Color.Gray,
+                    focusedBorderColor = Color.Green
+                ),
+                shape = RoundedCornerShape(12.dp),
+                maxLines = 5,
+            )
+            GradientButton(
+                onClick = {
+                    if (phoneNumber.value.length != 10) {
+                        // Handle error
+                    } else {
+                        // Proceed with account creation
+                    }
+                },
+                text = "Create Account",
+                modifier = Modifier
+                    .fillMaxWidth(0.85f)
+                    .padding(vertical = 16.dp)
+                    .height(50.dp)
             )
         }
 
-        // Phone Number Input
-        OutlinedTextField(
-            value = phoneNumber.value,
-            onValueChange = { phoneNumber.value = it.take(10) },
-            label = { Text("Phone Number") },
-            keyboardOptions = KeyboardOptions.Default.copy(
-                keyboardType = KeyboardType.Number
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = Color.Gray,
-                focusedBorderColor = Color.Green
-            ),
-            shape = RoundedCornerShape(50.dp),
-        )
-
-        // Bio Input (Text Area)
-        OutlinedTextField(
-            value = bio.value,
-            onValueChange = {
-                val wordCount = it.split("\\s+".toRegex()).size
-                if (wordCount <= wordLimit) {
-                    bio.value = it
-                }
-            },
-            label = { Text("Bio (max 60 words)") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 32.dp)
-                .height(120.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = Color.Gray,
-                focusedBorderColor = Color.Green
-            ),
-            shape = RoundedCornerShape(20.dp),
-            maxLines = 5,
-        )
-
-        GradientButton(
-            onClick = {
-                if (phoneNumber.value.length != 10) {
-                } else {
-                    // TODO: Proceed with account creation (Firebase authentication, etc.)
-                }
-            },
-            text = "Create Account"
-        )
     }
 }
 

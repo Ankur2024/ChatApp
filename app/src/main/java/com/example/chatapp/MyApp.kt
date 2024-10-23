@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import com.example.chatapp.presentation.navigation.Navigation
 
 @Composable
-fun MyApp(){
-    Navigation()
+fun MyApp(
+    onGoogleSignIn: () -> Unit
+) {
+    Navigation(onGoogleSignIn = onGoogleSignIn)
 }

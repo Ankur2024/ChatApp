@@ -7,4 +7,5 @@ interface AuthRepository {
     fun loginOrRegisterWithEmail(email: String): Flow<ResultState<String>>
     fun signInWithGoogle(idToken: String): Flow<ResultState<String>>
     fun checkIfEmailVerified(): Flow<ResultState<String>>
+    fun verifyGoogleSignIn(): Flow<ResultState<String>>
 }
