@@ -63,6 +63,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.firebase.firestore)
+    implementation(libs.firebase.storage)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -79,6 +80,7 @@ dependencies {
 
     // google signin
     implementation ("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-firestore")
 
     //dagger-hilt
     implementation("com.google.dagger:hilt-android:2.51.1")
